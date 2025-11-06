@@ -5,6 +5,10 @@ deno.lock
 /node_modules
 /.pnp
 .pnp.js
+.react-router
+/build
+*.tsbuildinfo
+
 
 # testing
 /coverage

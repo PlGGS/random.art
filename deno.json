@@ -1,8 +1,32 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "build": "NODE_ENV=production react-router build",
+    "dev": "react-router dev",
+    "format": "deno fmt",
+    "lint": "deno lint",
+    "start": "deno run -A --unstable-kv ./server.production.ts",
+    "typecheck": {
+      "command": "deno check --node-modules-dir=auto '**/*'",
+      "dependencies": ["typegen"]
+    },
+    "typegen": "react-router typegen"
   },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "jsxImportSourceTypes": "@types/react",
+    "rootDirs": [".", "./.react-router/types"],
+    "types": ["vite/client"]
+  },
+  "unstable": ["sloppy-imports"],
+  "exclude": ["build/"],
+  "nodeModulesDir": "manual",
   "imports": {
-    "@std/assert": "jsr:@std/assert@1"
+    "~/": "./app/",
+    "@std/http": "jsr:@std/http@^1.0.11",
+    "@std/path": "jsr:@std/path@^1.0.8",
+    "@std/encoding": "jsr:@std/encoding",
+    "@std/crypto/crypto": "jsr:@std/crypto/crypto"
   }
 }
