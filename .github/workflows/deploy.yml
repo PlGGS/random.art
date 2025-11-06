@@ -1,43 +1,47 @@
 name: Deploy
 on:
   push:
-    branches: main
+    branches: [main]
   pull_request:
-    branches: main
+    branches: [main]
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-
     permissions:
-      id-token: write # Needed for auth with Deno Deploy
-      contents: read # Needed to clone the repository
+      id-token: write     # OIDC for Deno Deploy auth
+      contents: read      # checkout
 
     steps:
-      - name: Clone repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Deno
+      - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
 
-      - name: Install dependencies
-        run: "deno install"
+      # If you actually have a build task (e.g., bundling, copying assets), keep this.
+      # Otherwise you can remove it.
+      - name: Build
+        run: deno task build
 
-      - name: Build step
-        run: "deno task build"
-
-      - name: Upload to Deno Deploy
+      - name: Deploy to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "huge-badger-89"
-          entrypoint: "server.production.ts"
-          root: ""
+          project: "random-art"
+          # Make this a plain file path, relative to root (no file://)
+          entrypoint: ./server.production.ts
+          # Use "." or omit root altogether (empty string can confuse things)
+          root: .
+          # Include everything the entrypoint imports at runtime
           include: |
             deno.json
             deno.lock
             build
             package.json
             server.production.ts
+            # add these if your entrypoint uses them:
+            import_map.json
+            src
