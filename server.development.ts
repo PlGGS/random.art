@@ -6,11 +6,10 @@ import { createRequestHandler } from "react-router";
 
 const handleRequest = createRequestHandler(
   await import(`./build/server/index.js?t=${Date.now()}`),
-  "production",
+  "development",
 );
 
-// default deno port is 8000
-Deno.serve(async (request) => {
+Deno.serve({ port: 3000 }, async (request) => {
   const pathname = new URL(request.url).pathname;
 
   try {
@@ -23,14 +22,8 @@ Deno.serve(async (request) => {
 
     const response = await serveFile(request, filePath, { fileInfo });
 
-    if (pathname.startsWith("/assets/")) {
-      response.headers.set(
-        "cache-control",
-        "public, max-age=31536000, immutable",
-      );
-    } else {
-      response.headers.set("cache-control", "public, max-age=600");
-    }
+    // disable aggressive caching in dev
+    response.headers.set("cache-control", "no-store");
 
     return response;
   } catch (error) {

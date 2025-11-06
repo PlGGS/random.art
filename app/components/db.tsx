@@ -46,7 +46,11 @@ export async function generateShortCode(longUrl: string) {
   return shortCode;
 }
 
-const kv = await Deno.openKv();
+let kvPromise: Promise<Deno.Kv> | null = null;
+function getKv(): Promise<Deno.Kv> {
+  if (!kvPromise) kvPromise = Deno.openKv(); // no await here
+  return kvPromise;
+}
 
 export async function storeShortLink(
   longUrl: string,
@@ -64,6 +68,7 @@ export async function storeShortLink(
 
   const userKey = [userId, shortCode];
 
+  const kv = await getKv();
   const res = await kv.atomic()
     .set(shortLinkKey, data)
     .set(userKey, shortCode)
@@ -73,11 +78,13 @@ export async function storeShortLink(
 }
 
 export async function getShortLink(shortCode: string) {
+  const kv = await getKv();
   const link = await kv.get<ShortLink>(["shortlinks", shortCode]);
   return link.value;
 }
 
 export async function getAllLinks() {
+  const kv = await getKv();
   const list = kv.list<ShortLink>({ prefix: ["shortlinks"] });
   const res = await Array.fromAsync(list);
   const linkValues = res.map((v) => v.value);
@@ -86,17 +93,20 @@ export async function getAllLinks() {
 
 export async function storeUser(sessionId: string, userData: GitHubUser) {
   const key = ["sessions", sessionId];
+  const kv = await getKv();
   const res = await kv.set(key, userData);
   return res;
 }
 
 export async function getUser(sessionId: string) {
   const key = ["sessions", sessionId];
+  const kv = await getKv();
   const res = await kv.get<GitHubUser>(key);
   return res.value;
 }
 
 export async function getUserLinks(userId: string) {
+  const kv = await getKv();
   const list = kv.list<string>({ prefix: [userId] });
   const res = await Array.fromAsync(list);
   const userShortLinkKeys = res.map((v) => ["shortlinks", v.value]);
@@ -109,13 +119,15 @@ export async function getUserLinks(userId: string) {
 
 // Realtime Analytics
 
-export function watchShortLink(shortCode: string) {
+export async function watchShortLink(shortCode: string) {
   const shortLinkKey = ["shortlinks", shortCode];
+  const kv = await getKv();
   const shortLinkStream = kv.watch<ShortLink[]>([shortLinkKey]).getReader();
   return shortLinkStream;
 }
 
 export async function getClickEvent(shortCode: string, clickId: number) {
+  const kv = await getKv();
   const analytics = await kv.get<ClickAnalytics>([
     "analytics",
     shortCode,
@@ -129,6 +141,7 @@ export async function incrementClickCount(
   data?: Partial<ClickAnalytics>,
 ) {
   const shortLinkKey = ["shortlinks", shortCode];
+  const kv = await getKv();
   const shortLink = await kv.get(shortLinkKey);
   const shortLinkData = shortLink.value as ShortLink;
 

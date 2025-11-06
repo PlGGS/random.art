@@ -1,7 +1,7 @@
 {
   "tasks": {
     "build": "NODE_ENV=production react-router build",
-    "dev": "react-router dev",
+    "dev": "deno run -A --unstable-kv ./server.development.ts",
     "format": "deno fmt",
     "lint": "deno lint",
     "start": "deno run -A --unstable-kv ./server.production.ts",
