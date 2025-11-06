@@ -22,8 +22,9 @@ jobs:
         with:
           deno-version: v2.x
 
-      # If you actually have a build task (e.g., bundling, copying assets), keep this.
-      # Otherwise you can remove it.
+      - name: Install dependencies
+        run: "deno install"
+
       - name: Build
         run: deno task build
 
@@ -31,11 +32,8 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: "random-art"
-          # Make this a plain file path, relative to root (no file://)
           entrypoint: ./server.production.ts
-          # Use "." or omit root altogether (empty string can confuse things)
           root: .
-          # Include everything the entrypoint imports at runtime
           include: |
             deno.json
             deno.lock
@@ -44,4 +42,4 @@ jobs:
             server.production.ts
             # add these if your entrypoint uses them:
             import_map.json
-            src
+            app
