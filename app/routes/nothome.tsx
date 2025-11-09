@@ -1,5 +1,6 @@
 import { Welcome } from "~/components/welcome.tsx";
 import type { Route } from "./+types/nothome.ts";
+import * as db from "~/components/db.tsx";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -8,7 +9,18 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export function loader() {
+export async function loader() {
+  const longUrl = 'https://fireship.io';
+  const userId = 'test';
+  const shortCode = await db.encodeShortCode(longUrl)
+
+  console.log(shortCode)
+
+  await db.storeShortLink(longUrl, shortCode, userId);
+  
+  const linkData = await db.getShortLink(shortCode)
+  console.log(linkData)
+  
   return {
     message: 'Hello, World!'
   };
