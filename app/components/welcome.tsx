@@ -2,7 +2,7 @@ import favicon from "/favicon.ico";
 
 export function Welcome({ message }: { message: string }) {
   return (
-    <main className="flex items-center justify-center pt-10 pb-4">
+    <main className="flex items-center justify-center pb-4">
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
         <header className="flex flex-col items-center gap-9">
           <div className="max-w-[100vw] p-4">
