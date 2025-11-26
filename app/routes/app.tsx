@@ -1,6 +1,13 @@
 import { Welcome } from "~/components/welcome.tsx";
 import type { Route } from "./+types/home.ts";
-import favicon from "/favicon.ico";
+import { Link } from "react-router-dom";
+import { useState } from "react";
+import Tab from "../components/tab.tsx";
+
+type TabType = {
+  tld: string;
+  mainTab?: boolean;
+};
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,48 +18,39 @@ export function meta({}: Route.MetaArgs) {
 
 export function loader() {
   return {
-    message: `Hello from Deno ${
-      Deno.version.deno ? `v${Deno.version.deno}` : "Deploy"
-    }`,
+    message: `Or click to get started! ↓`,
   };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
+  const [tabs, setTabs] = useState<TabType[]>([
+    { tld: "random.art", mainTab: true }
+  ]);
+
+  function addTab(tld: string) {
+    setTabs((prev) => [...prev, { tld }]);
+  }
+
+  function removeTab(tld: string) {
+    setTabs((prev) => prev.filter((tab) => tab.tld !== tld));
+  }
+  
   return (
-    <div className="w-full h-screen flex flex-row bg-white border-8 overflow-hidden">
-      <div className="flex flex-col bg-white border-4 overflow-hidden">
-        <div className="flex flex-row bg-white border-4 overflow-hidden">
-          <div className="flex items-center p-4 rounded-xl border-2 border-black bg-white w-64">
-            <h1 className="text-black text-xl font-bold">
-              <a
-                className="underline"
-                href="/"
-                target="_blank"
-              >
-                <img
-                  src={favicon}
-                  alt="random.art"
-                  className="w-8 h-8"
-                />
-              </a>
-            </h1>
-            <h1 className="text-black text-xl font-bold">
-              <a
-                className="underline"
-                href="/"
-                target="_blank"
-              >
-                andom.art
-              </a>
-            </h1>
-          </div>
+    <div className="w-full h-screen flex flex-row bg-white p-2 overflow-hidden">
+      <div className="flex flex-col bg-white pr-1.5 overflow-hidden">
+        <div className="flex flex-col gap-2 bg-white overflow-hidden">
+          {tabs.map((tab, i) => (
+            <Tab
+              key={tab.tld ?? i}
+              mainTab={tab.mainTab ?? false}
+              tld={tab.tld}
+            />
+          ))}
         </div>
       </div>
-      <div className="flex-1 border-4 overflow-hidden">
+      <div className="flex-1 border-2 rounded-xl border-black overflow-hidden">
         <Welcome message={loaderData.message} />;
       </div>
     </div>
   );
-  
-  
 }
