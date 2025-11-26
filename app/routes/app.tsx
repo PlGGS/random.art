@@ -3,9 +3,11 @@ import type { Route } from "./+types/home.ts";
 import { Welcome } from "~/components/welcome.tsx";
 import Tab from "../components/tab.tsx";
 
+type TabMode = "fixed" | "iframe" | "external";
 type TabType = {
   tld: string;
   mainTab?: boolean;
+  mode: TabMode;
 };
 
 export function meta({}: Route.MetaArgs) {
@@ -22,7 +24,7 @@ export function loader() {
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const fixedFirstTab: TabType = { tld: "random.art", mainTab: true };
+  const fixedFirstTab: TabType = { tld: "random.art", mainTab: true, mode: "fixed" };
   const [dynamicTabs, setDynamicTabs] = useState<TabType[]>([]);
   const tabs = useMemo(
     () => [fixedFirstTab, ...dynamicTabs],
@@ -36,54 +38,45 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  function addTab(tld: string) {
-    setDynamicTabs((prev) => {
-      const newDynamic = [...prev, { tld }];
+  async function addTab(tld: string) {
+    const url = `https://${tld}`;
 
-      // index 0 is fixedFirstTab
-      const newIndex = newDynamic.length;
+    try {
+      const res = await fetch("/api/check-embed", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
 
-      setCurrentIndex(newIndex);
-      setAutoScrollIndex(newIndex);
+      let mode: TabMode = "external";
+      if (res.ok) {
+        const data = await res.json();
+        mode = data.mode;
+      }
 
-      return newDynamic;
-    });
+      const newTab: TabType = { tld, mode };
+
+      setDynamicTabs((prev) => {
+        const newDynamic = [...prev, newTab];
+
+        // index 0 is fixedFirstTab
+        const newIndex = newDynamic.length;
+
+        setCurrentIndex(newIndex);
+        setAutoScrollIndex(newIndex);
+
+        return newDynamic;
+      });
+    } catch {
+      const newTab: TabType = { tld, mode: "external" };
+      setDynamicTabs((prev) => [...prev, newTab]);
+    }
   }
 
   function removeTab(tld: string) {
     if (tld === fixedFirstTab.tld) return;
     setDynamicTabs((prev) => prev.filter((tab) => tab.tld !== tld));
   }
-
-  function markSuccess(index: number) {
-    setIframeStatus((prev) => ({ ...prev, [index]: "success" }));
-  }
-
-  function markError(index: number) {
-    setIframeStatus((prev) => ({ ...prev, [index]: "error" }));
-  }
-
-  useEffect(() => {
-    // Ensure every visible tab index has a status entry
-    const indexes = [currentIndex - 1, currentIndex, currentIndex + 1]
-      .filter((i) => i >= 0 && i < tabs.length);
-
-    indexes.forEach((i) => {
-      if (iframeStatus[i] === undefined) {
-        // Mark as loading
-        setIframeStatus((prev) => ({ ...prev, [i]: "loading" }));
-
-        // Fallback timeout: if still loading after 1 sec → assume blocked
-        setTimeout(() => {
-          setIframeStatus((prev) =>
-            prev[i] === "loading"
-              ? { ...prev, [i]: "error" }
-              : prev
-          );
-        }, 1000);
-      }
-    });
-  }, [currentIndex, tabs, iframeStatus]);
 
   // Measure the height of the right-hand panel
   useEffect(() => {
@@ -149,8 +142,9 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </div>
 
         <button
-          // onClick={() => addTab("www.youtube.com")}
-          onClick={() => addTab("www.youtube.com/embed/BxV14h0kFs0")}
+          onClick={() => addTab("youtube.com")}
+          // onClick={() => addTab("youtube.com/embed/BxV14h0kFs0")}
+          // onClick={() => addTab("blakeboris.com")}
           className="mt-4 px-4 py-2 border rounded-lg text-sm hover:bg-gray-100"
         >
           Add tab
@@ -192,28 +186,29 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                         <Welcome message={loaderData.message} />
                       ) : (
                         <div className="flex flex-col text-center h-full w-full">
-                          <iframe
-                            src={"https://" + tab.tld}
-                            title={tab.tld}
-                            className="w-full h-full border-0"
-                            onLoad={() => markSuccess(i)}
-                            onError={() => markError(i)}
-                          />
-
-                          {/* Conditionally show the error message */}
-                          {iframeStatus[i] === "error" && (
+                          {tab.mode === "iframe" || iframeStatus[i] === "error" ? (
+                            <iframe
+                              src={"https://" + tab.tld}
+                              title={tab.tld}
+                              className="w-full h-full border-0"
+                            />
+                          ) : (
                             <>
-                              <p className="text-center mt-2">
-                                {tab.tld} has blocked embedding for security purposes.
-                              </p>
-                              <a
+                              <div className="flex-1 flex flex-col items-center justify-center px-4">
+                                <p className="text-center">
+                                  This site can&apos;t be embedded here.
+                                  <br />
+                                  You can open it in a new tab instead.
+                                </p>
+                                <a
                                 href={"https://" + tab.tld}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="underline text-blue-600 text-center block mt-1"
+                                className="flex flex-col pt-4 underline text-blue-600 items-center justify-center mb-4"
                               >
                                 Open {"https://" + tab.tld} in a new tab
                               </a>
+                              </div>
                             </>
                           )}
                         </div>
