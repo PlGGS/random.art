@@ -2,6 +2,11 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import type { Route } from "./+types/home.ts";
 import { Welcome } from "~/components/welcome.tsx";
 import Tab from "../components/tab.tsx";
+import { User, getCurrentUser } from "~/utils/db.tsx";
+
+type LoaderData = {
+  currentUser: User | null
+}
 
 type TabMode = "fixed" | "iframe" | "external";
 type TabType = {
@@ -17,13 +22,19 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export function loader() {
+export async function loader({ request }: Route.LoaderArgs): Promise<LoaderData> {
+  const currentUser = await getCurrentUser(request);
+
+  console.log("home.loader currentUser: ", currentUser); 
+
   return {
-    message: `Or click to get started! ↓`,
+    currentUser
   };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
+  const { currentUser } = loaderData as unknown as LoaderData;
+
   const fixedFirstTab: TabType = { tld: "random.art", mainTab: true, mode: "fixed" };
   const [dynamicTabs, setDynamicTabs] = useState<TabType[]>([]);
   const tabs = useMemo(
@@ -34,7 +45,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoScrollIndex, setAutoScrollIndex] = useState<number | null>(null);
   const [panelHeight, setPanelHeight] = useState<number | null>(null);
-  const [iframeStatus, setIframeStatus] = useState<Record<number, "loading" | "success" | "error">>({});
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -88,8 +98,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     };
 
     updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
+    globalThis.addEventListener("resize", updateHeight);
+    return () => globalThis.removeEventListener("resize", updateHeight);
   }, []);
 
   // Update currentIndex based on scroll position
@@ -142,10 +152,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </div>
 
         <button
-          onClick={() => addTab("youtube.com")}
-          // onClick={() => addTab("youtube.com/embed/BxV14h0kFs0")}
+          // onClick={() => addTab("youtube.com")}
+          onClick={() => addTab("youtube.com/embed/BxV14h0kFs0")}
           // onClick={() => addTab("blakeboris.com")}
           className="mt-4 px-4 py-2 border rounded-lg text-sm hover:bg-gray-100"
+          type="button"
         >
           Add tab
         </button>
@@ -162,7 +173,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               <div
                 className="h-full min-h-full snap-start flex items-center justify-center"
               >
-                <Welcome message={loaderData.message} />
+                <Welcome
+                  onAddTab={addTab}
+                  currentUser={currentUser}
+                />
               </div>
             )
           ) : (
@@ -183,10 +197,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       style={{ height: panelHeight }}
                     >
                       {i === 0 ? (
-                        <Welcome message={loaderData.message} />
+                        <Welcome
+                          onAddTab={addTab}
+                          currentUser={currentUser}
+                        />
                       ) : (
                         <div className="flex flex-col text-center h-full w-full">
-                          {tab.mode === "iframe" || iframeStatus[i] === "error" ? (
+                          {tab.mode === "iframe" ? (
                             <iframe
                               src={"https://" + tab.tld}
                               title={tab.tld}

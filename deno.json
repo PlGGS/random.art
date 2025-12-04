@@ -1,10 +1,10 @@
 {
   "tasks": {
     "build": "NODE_ENV=production react-router build",
-    "dev": "deno task build && deno run -A --unstable-kv ./server.development.ts",
+    "dev": "deno task build && deno run -A --env --unstable-kv --watch=app,server.development.ts server.development.ts",
     "format": "deno fmt",
     "lint": "deno lint",
-    "start": "deno run -A --unstable-kv ./server.production.ts",
+    "start": "deno run -A --env --unstable-kv ./server.production.ts",
     "typecheck": {
       "command": "deno check --node-modules-dir=auto '**/*'",
       "dependencies": ["typegen"]
@@ -31,6 +31,7 @@
     "react": "npm:react@18",
     "react-dom": "npm:react-dom@18",
     "react-router": "npm:react-router@7",
-    "react-router-dom": "npm:react-router-dom@7"
+    "react-router-dom": "npm:react-router-dom@7",
+    "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.10.0"
   }
 }

@@ -1,7 +1,7 @@
 // routes/link.tsx
 import { useLoaderData } from "react-router";
-import Link from "~/components/link.tsx";
-import { getShortLink } from "~/components/db.tsx";
+import Link from "../components/link.tsx";
+import { getShortLink } from "../utils/db.tsx";
 import favicon from "/favicon.ico";
 
 // Use a route loader (React Router’s data API)
