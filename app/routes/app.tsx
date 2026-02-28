@@ -230,14 +230,20 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               onRemoveTab={removeTab}
             />
           ))}
+          <button
+            onClick={() => addTab("youtube.com/embed/BxV14h0kFs0")}
+            className="w-full min-w-0 flex md:flex flex-row items-center p-4 justify-center rounded-xl border-2 border-black bg-white"
+            type="button"
+          >
+            New tab
+          </button>
         </div>
-        <button
-          onClick={() => addTab("youtube.com/embed/BxV14h0kFs0")}
-          className="w-full min-w-0 flex md:flex flex-row items-center p-4 justify-center rounded-xl border-2 border-black bg-white"
-          type="button"
-        >
-          Add tab
-        </button>
+        <div className="w-full min-w-0 border-1 border-black bg-white">
+          {/* ... */}
+        </div>
+        <div className="w-full min-w-0 flex md:flex flex-row items-center p-4 my-2 justify-center rounded-xl border-2 border-black bg-white">
+          {/* ... */}
+        </div>
         <div
           onPointerDown={(e) => {
             isResizingRef.current = true;
@@ -255,7 +261,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           role="separator"
         />
       </div>
-
       <div className="flex-1 border-2 rounded-xl border-black overflow-hidden flex">
         <div
           ref={scrollRef}
