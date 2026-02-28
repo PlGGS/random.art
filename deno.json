@@ -24,14 +24,14 @@
   "nodeModulesDir": "manual",
   "imports": {
     "~/": "./app/",
-    "@std/http": "jsr:@std/http@^1.0.11",
-    "@std/path": "jsr:@std/path@^1.0.8",
-    "@std/encoding": "jsr:@std/encoding",
-    "@std/crypto/crypto": "jsr:@std/crypto/crypto",
-    "react": "npm:react@18",
-    "react-dom": "npm:react-dom@18",
-    "react-router": "npm:react-router@7",
-    "react-router-dom": "npm:react-router-dom@7",
-    "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.10.0"
+    "@std/http": "jsr:@std/http@^1.0.25",
+    "@std/path": "jsr:@std/path@^1.1.4",
+    "@std/encoding": "jsr:@std/encoding@1.0.10",
+    "@std/crypto/crypto": "jsr:@std/crypto@1.0.5/crypto",
+    "react": "npm:react@^19.2.4",
+    "react-dom": "npm:react-dom@^19.2.4",
+    "react-router": "npm:react-router@^7.13.1",
+    "react-router-dom": "npm:react-router-dom@^7.13.1",
+    "kv_oauth": "https://deno.land/x/deno_kv_oauth@latest"
   }
 }

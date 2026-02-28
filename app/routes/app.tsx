@@ -12,7 +12,9 @@ type TabMode = "fixed" | "iframe" | "external";
 type TabType = {
   tld: string;
   mainTab?: boolean;
+  currentUser: User | null;
   mode: TabMode;
+  onRemoveTab: (tld: string) => void
 };
 
 export function meta({}: Route.MetaArgs) {
@@ -35,7 +37,7 @@ export async function loader({ request }: Route.LoaderArgs): Promise<LoaderData>
 export default function Home({ loaderData }: Route.ComponentProps) {
   const { currentUser } = loaderData as unknown as LoaderData;
 
-  const fixedFirstTab: TabType = { tld: "random.art", mainTab: true, mode: "fixed" };
+  const fixedFirstTab: TabType = { tld: "random.art", mode: "fixed", mainTab: true, currentUser, onRemoveTab: removeTab};
   const [dynamicTabs, setDynamicTabs] = useState<TabType[]>([]);
   const tabs = useMemo(
     () => [fixedFirstTab, ...dynamicTabs],
@@ -64,7 +66,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         mode = data.mode;
       }
 
-      const newTab: TabType = { tld, mode };
+      const newTab: TabType = { tld, mode, currentUser, onRemoveTab: removeTab };
 
       setDynamicTabs((prev) => {
         const newDynamic = [...prev, newTab];
@@ -78,7 +80,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         return newDynamic;
       });
     } catch {
-      const newTab: TabType = { tld, mode: "external" };
+      const newTab: TabType = { tld, mode: "external", currentUser, onRemoveTab: removeTab };
       setDynamicTabs((prev) => [...prev, newTab]);
     }
   }
@@ -138,28 +140,87 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   const beforeCount = startIndex;
   const afterCount = tabs.length - endIndex - 1;
 
+  const MIN_SIDEBAR = 220;
+  const MAX_SIDEBAR = 520;
+
+  const [sidebarWidth, setSidebarWidth] = useState(320);
+
+  const isResizingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(0);
+
+  useEffect(() => {
+    function onPointerMove(e: PointerEvent) {
+      if (!isResizingRef.current) return;
+
+      const dx = e.clientX - startXRef.current;
+      const next = startWidthRef.current + dx;
+
+      const clamped = Math.max(MIN_SIDEBAR, Math.min(MAX_SIDEBAR, next));
+      setSidebarWidth(clamped);
+
+      // Prevent text selection / weird drag behaviors while resizing
+      e.preventDefault();
+    }
+
+    function onPointerUp() {
+      if (!isResizingRef.current) return;
+      isResizingRef.current = false;
+
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    }
+
+    globalThis.addEventListener("pointermove", onPointerMove);
+    globalThis.addEventListener("pointerup", onPointerUp);
+
+    return () => {
+      globalThis.removeEventListener("pointermove", onPointerMove);
+      globalThis.removeEventListener("pointerup", onPointerUp);
+    };
+  }, []);
+
   return (
     <div className="w-full h-screen flex flex-row bg-white p-2 overflow-hidden">
-      <div className="flex flex-col bg-white pr-1.5 h-full">
-        <div className="flex-1 flex flex-col gap-2 bg-white overflow-y-auto">
+      <div
+        className="relative flex flex-col bg-white pr-1.5 h-full"
+        style={{ width: sidebarWidth }}
+      >
+        <div className="flex-1 flex flex-col gap-2 bg-white overflow-y-auto w-full min-w-0">
           {tabs.map((tab, i) => (
             <Tab
-              key={i} // use index for stability; first is always 0
+              key={i}
               mainTab={i === 0 ? true : tab.mainTab ?? false}
               tld={tab.tld}
+              currentUser={currentUser}
+              onRemoveTab={removeTab}
             />
           ))}
         </div>
-
         <button
-          // onClick={() => addTab("youtube.com")}
           onClick={() => addTab("youtube.com/embed/BxV14h0kFs0")}
-          // onClick={() => addTab("blakeboris.com")}
-          className="mt-4 px-4 py-2 border rounded-lg text-sm hover:bg-gray-100"
+          className="w-full min-w-0 flex md:flex flex-row items-center p-4 justify-center rounded-xl border-2 border-black bg-white"
+          // className="mt-4 px-4 py-2 border rounded-lg text-sm hover:bg-gray-100"
           type="button"
         >
           Add tab
         </button>
+        <div
+          onPointerDown={(e) => {
+            isResizingRef.current = true;
+            startXRef.current = e.clientX;
+            startWidthRef.current = sidebarWidth;
+
+            document.body.style.cursor = "col-resize";
+            document.body.style.userSelect = "none";
+
+            (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+            e.preventDefault();
+          }}
+          className="absolute top-0 right-0 h-full w-2 cursor-col-resize"
+          aria-label="Resize sidebar"
+          role="separator"
+        />
       </div>
 
       <div className="flex-1 border-2 rounded-xl border-black overflow-hidden flex">

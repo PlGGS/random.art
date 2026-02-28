@@ -34,19 +34,34 @@ export function Welcome({ onAddTab, currentUser }: WelcomeProps) {
                   {currentUser.emailAddress})
                 </li>
               ) : (
-                <li className="self-stretch p-3 leading-normal">
-                  <a
-                    className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                    href="/signin"
-                  >
-                    <img
-                      src="/login.svg"
-                      alt="signin"
-                      className="h-6 w-6 full"
-                    />
-                    Login / Sign up
-                  </a>
-                </li>
+                <>
+                  <li className="self-stretch p-3 leading-normal">
+                    <a
+                      className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
+                      href="/signin"
+                    >
+                      <img
+                        src="/login.svg"
+                        alt="signin"
+                        className="h-6 w-6 full"
+                      />
+                      Login with Google
+                    </a>
+                  </li>
+                  <li className="self-stretch p-3 leading-normal">
+                    <a
+                      className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
+                      href="/signin"
+                    >
+                      <img
+                        src="/login.svg"
+                        alt="signin"
+                        className="h-6 w-6 full"
+                      />
+                      Login with email
+                    </a>
+                  </li>
+                </>
               )}
               <li className="self-stretch p-3 text-gray-900 dark:text-gray-200 leading-normal">
                 Or click to get started! ↓
