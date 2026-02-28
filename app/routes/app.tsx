@@ -87,7 +87,41 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   function removeTab(tld: string) {
     if (tld === fixedFirstTab.tld) return;
-    setDynamicTabs((prev) => prev.filter((tab) => tab.tld !== tld));
+
+    setDynamicTabs((prev) => {
+      const removedDynamicIndex = prev.findIndex((t) => t.tld === tld);
+      if (removedDynamicIndex === -1) return prev;
+
+      const newDynamicTabs = prev.filter((t) => t.tld !== tld);
+
+      // dynamic index -> tabs index (tabs = [fixed, ...dynamic])
+      const removedTabIndex = removedDynamicIndex + 1;
+
+      setCurrentIndex((cur) => {
+        let nextIndex = cur;
+
+        if (cur > removedTabIndex) {
+          // Removed something before current -> shift left
+          nextIndex = cur - 1;
+        } else if (cur === removedTabIndex) {
+          // Removed the current tab -> KEEP SAME INDEX
+          // so the "next tab" slides into this slot
+          nextIndex = cur;
+        } else {
+          // Removed after current -> no change
+          nextIndex = cur;
+        }
+
+        // Clamp to last valid index after removal
+        const newTabsLength = 1 + newDynamicTabs.length; // fixed + dynamic
+        nextIndex = Math.min(Math.max(nextIndex, 0), newTabsLength - 1);
+
+        setAutoScrollIndex(nextIndex);
+        return nextIndex;
+      });
+
+      return newDynamicTabs;
+    });
   }
 
   // Measure the height of the right-hand panel
@@ -189,7 +223,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <div className="flex-1 flex flex-col gap-2 bg-white overflow-y-auto w-full min-w-0">
           {tabs.map((tab, i) => (
             <Tab
-              key={i}
+              key={tab.tld}
               mainTab={i === 0 ? true : tab.mainTab ?? false}
               tld={tab.tld}
               currentUser={currentUser}
@@ -200,7 +234,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <button
           onClick={() => addTab("youtube.com/embed/BxV14h0kFs0")}
           className="w-full min-w-0 flex md:flex flex-row items-center p-4 justify-center rounded-xl border-2 border-black bg-white"
-          // className="mt-4 px-4 py-2 border rounded-lg text-sm hover:bg-gray-100"
           type="button"
         >
           Add tab
@@ -253,7 +286,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                   const tab = tabs[i];
                   return (
                     <div
-                      key={i}
+                      key={tab.tld}
                       className="snap-start flex h-full w-full items-center justify-center"
                       style={{ height: panelHeight }}
                     >
