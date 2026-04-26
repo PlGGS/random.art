@@ -241,19 +241,43 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <div className="w-full min-w-0 border-1 border-black bg-white">
           {/* ... */}
         </div>
-        <div className="w-full min-w-0 flex md:flex flex-row items-center p-4 my-2 rounded-xl border-2 border-black bg-white">
-          <h3 className="justify-left">
-            Sign in to contribute!
-          </h3>
-          <div className="ml-auto justify-right">
-            <ul className="flex justify-right list-none">
-              {currentUser ? (
-                <li className="self-stretch p-1 text-gray-900 dark:text-gray-200 leading-normal">
-                  Hello, {currentUser.firstName} {currentUser.lastName} (
-                  {currentUser.emailAddress})
-                </li>
-              ) : (
-                <>
+        <div className="w-full min-w-0 flex md:flex flex-row items-center p-3 my-2 rounded-xl border-2 border-black bg-white">
+          {currentUser ? (
+            <>
+              <div className="ml-full justify-left">
+                <h3 className="justify-left">
+                  Hello, {currentUser.firstName} {currentUser.lastName}
+                </h3>
+                <h3 className="justify-left">
+                  ({currentUser.emailAddress})
+                </h3>
+              </div>
+              <div className="ml-auto justify-right">
+                <ul className="flex justify-right list-none">
+                  <li className="self-stretch py-1.5 pl-1.5leading-normal float-right">
+                    <a
+                      className="underline group flex items-center self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
+                      href="/signout"
+                    >
+                      <img
+                        src="/login.svg"
+                        alt="signout"
+                        className="h-6 w-6 full max-w-none"
+                      />
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="ml-full justify-left">
+                <h3 className="justify-left">
+                  Sign in to contribute!
+                </h3>
+              </div>
+              <div className="ml-auto justify-right">
+                <ul className="flex justify-right list-none">
                   <li className="self-stretch py-1.5 pr-1.5 leading-normal float-right">
                     <a
                       className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
@@ -290,12 +314,61 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       />
                     </a>
                   </li>
-                </>
-              )}
-            </ul>
-          </div>
-          {/* ... */}
+                </ul>
+              </div>
+            </>
+          )}
         </div>
+          {/* ...
+            <div>
+              {currentUser ? (
+                <>
+                  <ul className="flex list-none">
+                    <li className="self-stretch p-1 text-gray-900 dark:text-gray-200 leading-normal">
+                      <p>
+                        Hello, {currentUser.firstName} {currentUser.lastName} ({currentUser.emailAddress})
+                      </p>
+                    </li>
+                    <li className="self-stretch py-1.5 pr-1.5 leading-normal float-right">
+                      <a
+                        className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
+                        href="/signout"
+                      >
+                        <img
+                          src="/login.svg"
+                          alt="signout"
+                          className="h-6 w-6 full"
+                        />
+                      </a>
+                    </li>
+                  </ul>
+                </>
+              ) : (
+                <div className="w-full">
+                  <ul className="flex w-full list-none items-center justify-between">
+                    <li>
+                      <p className="p-1">Sign in to contribute!</p>
+                    </li>
+                    <li className="ml-auto">
+                      <div className="flex items-center gap-2">
+                        <a href="/signin">
+                          <img src="/google.svg" alt="Google sign in" className="h-6 w-6" />
+                        </a>
+
+                        <a href="/signin">
+                          <img src="/apple.svg" alt="Apple sign in" className="h-6 w-6" />
+                        </a>
+
+                        <a href="/signin">
+                          <img src="/login.svg" alt="Sign in" className="h-6 w-6" />
+                        </a>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              )}
+          </div>
+          */}
         <div
           onPointerDown={(e) => {
             isResizingRef.current = true;

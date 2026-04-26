@@ -1,4 +1,5 @@
 import type { User } from "~/utils/db.tsx";
+import AutoTypingText from "./autoTypingText.tsx";
 
 type WelcomeProps = {
   onAddTab: (tld: string) => void;
@@ -11,17 +12,31 @@ export function Welcome({ onAddTab, currentUser }: WelcomeProps) {
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
         <header className="flex flex-col items-center gap-9">
           <div className="max-w-[100vw] p-4">
-            <img
-              src="/letter-r.svg"
-              alt="random.art"
-              className="h-64 w-64 full"
-            />
-            <p className="text-4xl font-bold text-black rotate-90 pl-25 tracking-widest select-none">
-              andom
-            </p>
+            <ul className="flex list-none">
+              <li>
+                <img
+                  src="/letter-r.svg"
+                  alt="random.art"
+                  className="h-64 w-64 full"
+                />
+              </li>
+              <li className="text-4xl font-bold text-black pb-2 mt-auto">
+                <p>
+                  andom
+                </p>
+              </li>
+            </ul>
           </div>
         </header>
-
+        <div>
+          <h1 className="text-4xl font-bold">
+            Discover{" "}
+            <span className="text-blue-600">
+              <AutoTypingText />
+            </span>
+            {" "}across the internet.
+          </h1>
+        </div>
         <div className="max-w-[300px] pt-8 w-full space-y-6 px-4">
           <nav className="rounded-3xl border border-gray-700 p-6 dark:border-gray-200 space-y-4">
             <p className="leading-6 text-gray-900 dark:text-gray-200 text-center">
