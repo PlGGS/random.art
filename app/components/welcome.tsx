@@ -41,11 +41,24 @@ export function Welcome({ onAddTab, currentUser }: WelcomeProps) {
                       href="/signin"
                     >
                       <img
-                        src="/login.svg"
+                        src="/google.svg"
                         alt="signin"
                         className="h-6 w-6 full"
                       />
                       Login with Google
+                    </a>
+                  </li>
+                  <li className="self-stretch p-3 leading-normal">
+                    <a
+                      className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
+                      href="/signin"
+                    >
+                      <img
+                        src="/apple.svg"
+                        alt="signin"
+                        className="h-6 w-6 full"
+                      />
+                      Login with Apple
                     </a>
                   </li>
                   <li className="self-stretch p-3 leading-normal">

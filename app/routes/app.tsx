@@ -241,7 +241,59 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <div className="w-full min-w-0 border-1 border-black bg-white">
           {/* ... */}
         </div>
-        <div className="w-full min-w-0 flex md:flex flex-row items-center p-4 my-2 justify-center rounded-xl border-2 border-black bg-white">
+        <div className="w-full min-w-0 flex md:flex flex-row items-center p-4 my-2 rounded-xl border-2 border-black bg-white">
+          <h3 className="justify-left">
+            Sign in to contribute!
+          </h3>
+          <div className="ml-auto justify-right">
+            <ul className="flex justify-right list-none">
+              {currentUser ? (
+                <li className="self-stretch p-1 text-gray-900 dark:text-gray-200 leading-normal">
+                  Hello, {currentUser.firstName} {currentUser.lastName} (
+                  {currentUser.emailAddress})
+                </li>
+              ) : (
+                <>
+                  <li className="self-stretch py-1.5 pr-1.5 leading-normal float-right">
+                    <a
+                      className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
+                      href="/signin"
+                    >
+                      <img
+                        src="/google.svg"
+                        alt="signin"
+                        className="h-6 w-6 full"
+                      />
+                    </a>
+                  </li>
+                  <li className="self-stretch p-1.5 leading-normal float-right">
+                    <a
+                      className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
+                      href="/signin"
+                    >
+                      <img
+                        src="/apple.svg"
+                        alt="signin"
+                        className="h-6 w-6 full"
+                      />
+                    </a>
+                  </li>
+                  <li className="self-stretch py-1.5 pl-1.5leading-normal float-right">
+                    <a
+                      className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
+                      href="/signin"
+                    >
+                      <img
+                        src="/login.svg"
+                        alt="signin"
+                        className="h-6 w-6 full"
+                      />
+                    </a>
+                  </li>
+                </>
+              )}
+            </ul>
+          </div>
           {/* ... */}
         </div>
         <div
