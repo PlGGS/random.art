@@ -26,7 +26,7 @@ export default function Tab({ tld, mainTab, currentUser, onRemoveTab }: TabProps
               <span className="text-black text-xl font-bold">andom.art</span>
             </a>
           </h1>
-          <div className="ml-auto w-[1.5rem] text-blue-700 hover:underline dark:text-blue-500">
+          {/* <div className="ml-auto w-[1.5rem] text-blue-700 hover:underline dark:text-blue-500">
             {currentUser !== null ? (
               <>
                 <a
@@ -44,7 +44,7 @@ export default function Tab({ tld, mainTab, currentUser, onRemoveTab }: TabProps
               <>
               </>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     ) : (

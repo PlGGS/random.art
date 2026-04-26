@@ -13,16 +13,16 @@ export function Welcome({ onAddTab, currentUser }: WelcomeProps) {
         <header className="flex flex-col items-center gap-9">
           <div className="max-w-[100vw] p-4">
             <ul className="flex list-none">
-              <li>
+              <li className="pb-0.25">
                 <img
                   src="/letter-r.svg"
                   alt="random.art"
                   className="h-64 w-64 full"
                 />
               </li>
-              <li className="text-4xl font-bold text-black pb-2 mt-auto">
+              <li className="text-4xl font-bold text-black pb-2.25 mt-auto -ml-8">
                 <p>
-                  andom
+                  andom.art
                 </p>
               </li>
             </ul>
@@ -31,7 +31,7 @@ export function Welcome({ onAddTab, currentUser }: WelcomeProps) {
         <div>
           <h1 className="text-4xl font-bold">
             Discover{" "}
-            <span className="text-blue-600">
+            <span className="text-[#40C0E7]">
               <AutoTypingText />
             </span>
             {" "}across the internet.

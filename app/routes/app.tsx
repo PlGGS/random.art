@@ -260,7 +260,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       href="/signout"
                     >
                       <img
-                        src="/login.svg"
+                        src="/logout.svg"
                         alt="signout"
                         className="h-6 w-6 full max-w-none"
                       />
