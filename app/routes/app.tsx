@@ -10,11 +10,10 @@ type LoaderData = {
 
 type TabMode = "fixed" | "iframe" | "external";
 type TabType = {
+  id: string;
   tld: string;
-  mainTab?: boolean;
-  currentUser: User | null;
   mode: TabMode;
-  onRemoveTab: (tld: string) => void
+  mainTab?: boolean;
 };
 
 export function meta({}: Route.MetaArgs) {
@@ -34,14 +33,20 @@ export async function loader({ request }: Route.LoaderArgs): Promise<LoaderData>
   };
 }
 
+const FIXED_FIRST_TAB: TabType = {
+  id: "home",
+  tld: "random.art",
+  mode: "fixed",
+  mainTab: true,
+};
+
 export default function Home({ loaderData }: Route.ComponentProps) {
   const { currentUser } = loaderData as unknown as LoaderData;
-
-  const fixedFirstTab: TabType = { tld: "random.art", mode: "fixed", mainTab: true, currentUser, onRemoveTab: removeTab};
+  
   const [dynamicTabs, setDynamicTabs] = useState<TabType[]>([]);
   const tabs = useMemo(
-    () => [fixedFirstTab, ...dynamicTabs],
-    [fixedFirstTab, dynamicTabs],
+    () => [FIXED_FIRST_TAB, ...dynamicTabs],
+    [dynamicTabs],
   );
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -66,12 +71,24 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         mode = data.mode;
       }
 
-      const newTab: TabType = { tld, mode, currentUser, onRemoveTab: removeTab };
+      appendTab({
+        id: crypto.randomUUID(),
+        tld,
+        mode
+      });
+    } catch {
+      //default to an external tab if we can't embed
+      appendTab({
+        id: crypto.randomUUID(),
+        tld,
+        mode: "external"
+      });
+    }
 
+    //helper
+    function appendTab(newTab: TabType) {
       setDynamicTabs((prev) => {
         const newDynamic = [...prev, newTab];
-
-        // index 0 is fixedFirstTab
         const newIndex = newDynamic.length;
 
         setCurrentIndex(newIndex);
@@ -79,23 +96,18 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
         return newDynamic;
       });
-    } catch {
-      const newTab: TabType = { tld, mode: "external", currentUser, onRemoveTab: removeTab };
-      setDynamicTabs((prev) => [...prev, newTab]);
     }
   }
 
-  function removeTab(tld: string) {
-    if (tld === fixedFirstTab.tld) return;
+  function removeTab(id: string) {
+    if (id === FIXED_FIRST_TAB.id) return;
 
     setDynamicTabs((prev) => {
-      const removedDynamicIndex = prev.findIndex((t) => t.tld === tld);
+      const removedDynamicIndex = prev.findIndex((t) => t.id === id);
       if (removedDynamicIndex === -1) return prev;
 
-      const newDynamicTabs = prev.filter((t) => t.tld !== tld);
-
-      // dynamic index -> tabs index (tabs = [fixed, ...dynamic])
-      const removedTabIndex = removedDynamicIndex + 1;
+      const newDynamicTabs = prev.filter((t) => t.id !== id);
+      const removedTabIndex = removedDynamicIndex + 1; // dynamic index -> tabs index (tabs = [fixed, ...dynamic])
 
       setCurrentIndex((cur) => {
         let nextIndex = cur;
@@ -163,7 +175,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       // Clear it so normal user scrolling isn't overridden
       setAutoScrollIndex(null);
     }
-  }, [autoScrollIndex, panelHeight, tabs.length]);
+  }, [autoScrollIndex, panelHeight, dynamicTabs.length]);
 
   const prevIndex = currentIndex > 0 ? currentIndex - 1 : null;
   const nextIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : null;
@@ -223,11 +235,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <div className="flex-1 flex flex-col gap-2 bg-white overflow-y-auto w-full min-w-0">
           {tabs.map((tab, i) => (
             <Tab
-              key={tab.tld}
+              key={tab.id}
               mainTab={i === 0 ? true : tab.mainTab ?? false}
               tld={tab.tld}
               currentUser={currentUser}
-              onRemoveTab={removeTab}
+              onRemoveTab={() => removeTab(tab.id)}
             />
           ))}
           <button
@@ -244,17 +256,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <div className="w-full min-w-0 flex md:flex flex-row items-center p-3 my-2 rounded-xl border-2 border-black bg-white">
           {currentUser ? (
             <>
-              <div className="ml-full justify-left">
-                <h3 className="justify-left">
+              <div className="ml-full justify-start">
+                <h3 className="justify-start">
                   Hello, {currentUser.firstName} {currentUser.lastName}
                 </h3>
-                <h3 className="justify-left">
+                <h3 className="justify-start">
                   ({currentUser.emailAddress})
                 </h3>
               </div>
-              <div className="ml-auto justify-right">
-                <ul className="flex justify-right list-none">
-                  <li className="self-stretch py-1.5 pl-1.5leading-normal float-right">
+              <div className="ml-auto justify-end">
+                <ul className="flex justify-end list-none">
+                  <li className="self-stretch py-1.5 pl-1.5 leading-normal float-right">
                     <a
                       className="underline group flex items-center self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
                       href="/signout"
@@ -262,7 +274,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       <img
                         src="/logout.svg"
                         alt="signout"
-                        className="h-6 w-6 full max-w-none"
+                        className="h-6 w-6 max-w-none"
                       />
                     </a>
                   </li>
@@ -271,13 +283,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
             </>
           ) : (
             <>
-              <div className="ml-full justify-left">
-                <h3 className="justify-left">
+              <div className="ml-full justify-start">
+                <h3 className="justify-start">
                   Sign in to contribute!
                 </h3>
               </div>
-              <div className="ml-auto justify-right">
-                <ul className="flex justify-right list-none">
+              <div className="ml-auto justify-end">
+                <ul className="flex justify-end list-none">
                   <li className="self-stretch py-1.5 pr-1.5 leading-normal float-right">
                     <a
                       className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
@@ -286,7 +298,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       <img
                         src="/google.svg"
                         alt="signin"
-                        className="h-6 w-6 full"
+                        className="h-6 w-6"
                       />
                     </a>
                   </li>
@@ -298,11 +310,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       <img
                         src="/apple.svg"
                         alt="signin"
-                        className="h-6 w-6 full"
+                        className="h-6 w-6"
                       />
                     </a>
                   </li>
-                  <li className="self-stretch py-1.5 pl-1.5leading-normal float-right">
+                  <li className="self-stretch py-1.5 pl-1.5 leading-normal float-right">
                     <a
                       className="underline group flex items-center gap-3 self-stretch leading-normal text-blue-700 hover:underline dark:text-blue-500"
                       href="/signin"
@@ -310,7 +322,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       <img
                         src="/login.svg"
                         alt="signin"
-                        className="h-6 w-6 full"
+                        className="h-6 w-6"
                       />
                     </a>
                   </li>
@@ -337,7 +349,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                         <img
                           src="/login.svg"
                           alt="signout"
-                          className="h-6 w-6 full"
+                          className="h-6 w-6"
                         />
                       </a>
                     </li>
@@ -393,16 +405,12 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           className="flex-1 overflow-y-auto snap-y snap-mandatory"
         >
           {panelHeight == null ? (
-            (
-              <div
-                className="h-full min-h-full snap-start flex items-center justify-center"
-              >
-                <Welcome
-                  onAddTab={addTab}
-                  currentUser={currentUser}
-                />
-              </div>
-            )
+            <div className="h-full min-h-full snap-start flex items-center justify-center">
+              <Welcome
+                onAddTab={addTab}
+                currentUser={currentUser}
+              />
+            </div>
           ) : (
             <>
               {beforeCount > 0 && (
@@ -414,9 +422,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                 (_, offset) => {
                   const i = startIndex + offset;
                   const tab = tabs[i];
+                  const url = `https://${tab.tld}`;
+
                   return (
                     <div
-                      key={tab.tld}
+                      key={tab.id}
                       className="snap-start flex h-full w-full items-center justify-center"
                       style={{ height: panelHeight }}
                     >
@@ -428,30 +438,30 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                       ) : (
                         <div className="flex flex-col text-center h-full w-full">
                           {tab.mode === "iframe" ? (
-                            <iframe
-                              src={"https://" + tab.tld}
-                              title={tab.tld}
-                              className="w-full h-full border-0"
-                            />
-                          ) : (
-                            <>
-                              <div className="flex-1 flex flex-col items-center justify-center px-4">
-                                <p className="text-center">
-                                  This site can&apos;t be embedded here.
-                                  <br />
-                                  You can open it in a new tab instead.
-                                </p>
-                                <a
-                                href={"https://" + tab.tld}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex flex-col pt-4 underline text-blue-600 items-center justify-center mb-4"
-                              >
-                                Open {"https://" + tab.tld} in a new tab
-                              </a>
-                              </div>
-                            </>
-                          )}
+                              <iframe
+                                src={url}
+                                title={tab.tld}
+                                className="w-full h-full border-0"
+                              />
+                            ) : (
+                              <>
+                                <div className="flex-1 flex flex-col items-center justify-center px-4">
+                                  <p className="text-center">
+                                    This site can&apos;t be embedded here.
+                                    <br />
+                                    You can open it in a new tab instead.
+                                  </p>
+                                  <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="flex flex-col pt-4 underline text-blue-600 items-center justify-center mb-4"
+                                >
+                                  Open {url} in a new tab
+                                </a>
+                                </div>
+                              </>
+                            )}
                         </div>
                       )}
                     </div>
