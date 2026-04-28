@@ -58,35 +58,26 @@ export default function Home({ loaderData }: Route.ComponentProps) {
   async function addTab(tld: string) {
     const url = `https://${tld}`;
 
+    let mode: TabMode = "external";
+
     try {
       const res = await fetch("/api/check-embed", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ url }),
       });
-
-      let mode: TabMode = "external";
+      
       if (res.ok) {
         const data = await res.json();
         mode = data.mode;
       }
-
-      appendTab({
+    } finally {
+      const newTab: TabType = {
         id: crypto.randomUUID(),
         tld,
         mode
-      });
-    } catch {
-      //default to an external tab if we can't embed
-      appendTab({
-        id: crypto.randomUUID(),
-        tld,
-        mode: "external"
-      });
-    }
+      };
 
-    //helper
-    function appendTab(newTab: TabType) {
       setDynamicTabs((prev) => {
         const newDynamic = [...prev, newTab];
         const newIndex = newDynamic.length;
@@ -253,7 +244,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <div className="w-full min-w-0 border-1 border-black bg-white">
           {/* ... */}
         </div>
-        <div className="w-full min-w-0 flex md:flex flex-row items-center p-3 my-2 rounded-xl border-2 border-black bg-white">
+        <div className="w-full min-w-0 flex md:flex flex-row items-center p-3 mt-2 rounded-xl border-2 border-black bg-white">
           {currentUser ? (
             <>
               <div className="ml-full justify-start">
@@ -444,14 +435,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                                 className="w-full h-full border-0"
                               />
                             ) : (
-                              <>
-                                <div className="flex-1 flex flex-col items-center justify-center px-4">
-                                  <p className="text-center">
-                                    This site can&apos;t be embedded here.
-                                    <br />
-                                    You can open it in a new tab instead.
-                                  </p>
-                                  <a
+                              <div className="flex-1 flex flex-col items-center justify-center px-4">
+                                <p className="text-center">
+                                  This site can&apos;t be embedded here.
+                                  <br />
+                                  You can open it in a new tab instead.
+                                </p>
+                                <a
                                   href={url}
                                   target="_blank"
                                   rel="noreferrer"
@@ -459,8 +449,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
                                 >
                                   Open {url} in a new tab
                                 </a>
-                                </div>
-                              </>
+                              </div>
                             )}
                         </div>
                       )}
