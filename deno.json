@@ -32,6 +32,6 @@
     "react-dom": "npm:react-dom@^19.2.4",
     "react-router": "npm:react-router@^7.13.1",
     "react-router-dom": "npm:react-router-dom@^7.13.1",
-    "kv_oauth": "https://deno.land/x/deno_kv_oauth@latest"
+    "kv_oauth": "https://deno.land/x/deno_kv_oauth@v0.10.0/mod.ts"
   }
 }

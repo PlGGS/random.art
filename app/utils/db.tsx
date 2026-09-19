@@ -214,16 +214,30 @@ export async function getCurrentUser(request: Request): Promise<User | null> {
   return await getUserByEmailAddress(session.emailAddress);
 }
 
-export async function getUserLinksByEmailAddress(emailAddress: string) {
+// Deno KV rejects getMany calls with more than 10 keys
+const KV_GET_MANY_LIMIT = 10;
+
+export async function getUserLinksByEmailAddress(
+  emailAddress: string,
+): Promise<ShortLink[]> {
   const kv = await getKvDB();
-  const list = kv.list<string>({ prefix: [emailAddress] });
-  const res = await Array.fromAsync(list);
-  const userShortLinkKeys = res.map((v) => ["shortlinks", v.value]);
+  const shortCodes = await getShortCodesByUser(emailAddress);
+  const keys = shortCodes.map((code) => ["shortlinks", code]);
 
-  const userRes = await kv.getMany<ShortLink[]>(userShortLinkKeys);
-  const userShortLinks = await Array.fromAsync(userRes);
+  const batches: Deno.KvKey[][] = [];
+  for (let i = 0; i < keys.length; i += KV_GET_MANY_LIMIT) {
+    batches.push(keys.slice(i, i + KV_GET_MANY_LIMIT));
+  }
 
-  return userShortLinks.map((v) => v.value);
+  const results = await Promise.all(
+    batches.map((batch) => kv.getMany<ShortLink[]>(batch)),
+  );
+
+  // Skip index entries whose short link record no longer exists
+  return results
+    .flat()
+    .map((entry) => entry.value)
+    .filter((link): link is ShortLink => link !== null);
 }
 
 // Realtime Analytics
